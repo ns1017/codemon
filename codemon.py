@@ -1,8 +1,8 @@
 # Welcome to Codemon, a game inspired by Pokemon and made solely for Python practice.
 # Author: ns1017
-# Version: 1.1
-# Start Date: 07/22/2025
-# Todo: add ascii art, expand attack capabilities, editable save.
+# Version: 1.2
+# Start Date: 07/22/2025, updated 07/23/2025
+# Todo: add story elements, set up trainers as gyms with badges, editable save.
 
 import random
 import pickle
@@ -56,7 +56,7 @@ codemon_ascii = {
     (o o)
     > ^ <
     """,
-        "Codequatic": """
+    "Codequatic": """
      💧
     (o o)
     ~~~~ 
@@ -136,7 +136,7 @@ if os.path.exists(save_file):
         data = pickle.load(f)
         captured_codemon = data["captured_codemon"]
 else:
-    print("No save file found. Let's choose your starter Codemon!")
+    print("No save file found. .pkl file must be in the same directory as codemon_v2.exe.")
     print("Choose your starting Codemon:")
     for i in range(len(codemon_list) - 1):  # Exclude Codegon
         print(f"{i + 1}. {codemon_list[i]} ({codemon_type[i]} Type, HP: {codemon_base_hp[i]}, ATK: {codemon_atk[i]})")
@@ -155,8 +155,9 @@ while True:
     print("1. Battle with a Codemon")
     print("2. Hunt for a new Codemon")
     print("3. Heal all Codemon")
-    print("4. Exit")
-    choice = input("Choose an option (1/2/3/4): ")
+    print("4. View your Codemon")
+    print("5. Save and Exit ")
+    choice = input("Choose an option (1/2/3/4/5): ")
 
     if choice == "1":
         # Battle
@@ -315,21 +316,39 @@ while True:
 
         print(f"\n🌄 It's currently {time_slot.upper()} (hour {current_hour}).")
         print(f"A wild {wild_codemon} appears! ({wild_type} Type, HP {wild_base_hp}, ATK {wild_atk})")
-        print(codemon_ascii[wild_codemon])
+        print(codemon_ascii[wild_codemon])  # Display ASCII art
+
         try_catch = input("Try to catch it? (yes/no): ").lower()
 
         if try_catch == "yes":
             max_level = max([c["level"] for c in captured_codemon]) if captured_codemon else 1
             if is_legendary:
-                catch_chance = min(100, 50 + max_level * 2)
+                initial_catch_chance = min(100, 50 + max_level * 2)
+                second_catch_chance = min(100, 25 + max_level)  # Lower odds for second attempt
             else:
-                catch_chance = min(100, 75 + max_level * 5)
+                initial_catch_chance = min(100, 75 + max_level * 5)
+                second_catch_chance = min(100, 50 + max_level * 2)  # Lower odds for second attempt
+
+        # First catch attempt
             catch_roll = random.randint(1, 100)
-            if catch_roll <= catch_chance:
-                print(f"🎉 You caught {wild_codemon}!")
+            if catch_roll <= initial_catch_chance:
+                print(f"🎉 You caught {wild_codemon} on the first try!")
                 captured_codemon.append({"name": wild_codemon, "level": 1, "current_hp": wild_base_hp})
             else:
-                print(f"{wild_codemon} escaped!")
+                print(f"{wild_codemon} resisted the first catch attempt!")
+                # Check if Codemon escapes
+                escape_chance = random.randint(1, 100)
+                if escape_chance <= 30:  # 30% chance to escape after first failure
+                    print(f"{wild_codemon} escaped!")
+                else:
+                    print(f"{wild_codemon} is still here. Trying again...")
+                    # Second catch attempt
+                    catch_roll = random.randint(1, 100)
+                    if catch_roll <= second_catch_chance:
+                        print(f"🎉 You caught {wild_codemon} on the second try!")
+                        captured_codemon.append({"name": wild_codemon, "level": 1, "current_hp": wild_base_hp})
+                    else:
+                        print(f"{wild_codemon} escaped after the second attempt!")
         else:
             print("You let it go.")
 
@@ -344,6 +363,23 @@ while True:
         print("All your Codemon have been healed!")
 
     elif choice == "4":
+        # View Codemon option
+        if not captured_codemon:
+            print("You have no captured Codemon.")
+        else:
+            print("\nYour Captured Codemon:")
+            for i, codemon in enumerate(captured_codemon):
+                name = codemon["name"]
+                level = codemon["level"]
+                current_hp = codemon["current_hp"]
+                # Calculate max HP and attack based on level
+                base_hp = codemon_base_hp[codemon_list.index(name)]
+                max_hp = base_hp + (level - 1) * 5
+                attack = codemon_atk[codemon_list.index(name)] + (level - 1) * 2
+                codemon_type_str = codemon_type[codemon_list.index(name)]
+                print(f"{i + 1}. {name} ({codemon_type_str} Type, Lv {level}, HP {current_hp}/{max_hp}, ATK {attack})")
+    
+    elif choice == "5":
         # Exit and save
         with open(save_file, "wb") as f:
             pickle.dump({"captured_codemon": captured_codemon}, f)
