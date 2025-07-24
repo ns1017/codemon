@@ -4,7 +4,7 @@ Codemon is a Pokémon inspired python3 project I've made after working through C
 How to play v1.2:
 
 *If you have a save file or .pkl, it needs to be in the same directory/folder as the codemon.exe.
-**If you have a save file a from a previous version, it most likely won't work.
+**If you have a save file from a previous version, it most likely won't work.
 
 Begin by chooising your starter codemon, all menus are navigated by numerical inputs or yes/no inputs. 
 
